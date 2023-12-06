@@ -21,6 +21,7 @@ import os, sys, time
 import numpy as np
 import pdal
 import argparse
+import laspy
 
 RPG_TO_MGA = 0
 MGA_TO_RPG = 1
@@ -180,7 +181,7 @@ output_file = outputpath
 translation = (itx, ity, itz)  # Translation in X, Y, Z
 scaling_factor = (isx, isy, isz)  # Uniform scaling factor
 scaling_center = (icx, icy, icz)  # Center of scaling
-rotation_angles = (0, 0, 0)  # Rotation angles in degrees for X, Y, Z axes
+rotation_angles = (0, 0, rot)  # Rotation angles in degrees for X, Y, Z axes
 rotation_center = (icx, icy, icz)  # Center of rotation
 
 affine_matrix_3d = create_affine_matrix_3d(translation, scaling_factor, scaling_center, rotation_angles, rotation_center, mode)
@@ -216,3 +217,5 @@ end_time = time.time()
 
 print("Point cloud transformation completed.")
 print("Elapsed time : " + str(end_time - start_time) + " seconds")  # time in seconds
+
+

@@ -5,7 +5,11 @@ Created on Tue Dec  5 13:36:39 2023
 @author: Daniel.Nugroho
 
 Usage:
-    -m r -i INPUTFILE.LAZ -o OUTPUTFILE.LAZ
+    -m m -i INPUTFILE.LAZ -o OUTPUTFILE.LAZ
+    -m m -i INPUTFILE.TIF -o OUTPUTFILE.TIF
+
+v0.11-231220
+    code cleanup, ability to export BIGTIFF
 
 v0.10-231216
     worked well by using simpler method of translation, rotation, & scaling.
@@ -376,7 +380,7 @@ input_file = inputpath
 output_file = outputpath
 
 """
-THIS BUNCH OF CODE IS FOR PURE LAZ TRANSFORMATION in 3D, INSTEAD OF 2D
+# THIS SECTION OF CODE IS FOR PURE LAZ TRANSFORMATION in 3D, INSTEAD OF 2D
 
 translation = (itx, ity, itz)  # Translation in X, Y, Z
 scaling_factor = (isx, isy, isz)  # Uniform scaling factor
@@ -384,37 +388,22 @@ scaling_center = (icx, icy, icz)  # Center of scaling
 rotation_angles = (0, 0, 0)  # Rotation angles in degrees for X, Y, Z axes
 rotation_center = (icx, icy, icz)  # Center of rotation
 
+# create real affine 3D transformation matrix
 affine_matrix_3d = create_affine_matrix_3d(
     translation, scaling_factor, scaling_center, rotation_angles, rotation_center, mode)
 
-# Convert the NumPy array to a Python list for JSON
-row_major_single_row = affine_matrix_3d.flatten()
-single_row_list = row_major_single_row.tolist()
-
-# construct JSON for the pipeline
-
-thelist = ""
-
-for i in range(len(single_row_list)):
-    thelist += str(single_row_list[i]) + " "
-
-json1 = "[" + "\"" + input_file + "\",{\"type\":\"filters.transformation\"," + \
-        "\"matrix\":\"" + thelist +"\"" + \
-        "},\"" + output_file + "\"" + "]"
-
-print("Input file : " + str(input_file))
-print("Output file: " + str(output_file))
 """
 
-translation = (itx, ity)  # Translation in X, Y, Z
+translation = (itx, ity)  # Translation in X, Y
 scaling_factor = (isx, isy)  # Uniform scaling factor
 scaling_center = (icx, icy)  # Center of scaling
-rotation_angles = rot  # Rotation angles in degrees for X, Y, Z axes
+rotation_angles = rot  # Rotation angles in degrees for X, Y axes
 rotation_center = (icx, icy)  # Center of rotation
 
 affine_matrix_2d = create_affine_matrix_2d(
     translation, scaling_factor, scaling_center, rotation_angles, rotation_center, mode)
 
+# create a faux 3D affine transformation matrix
 affine_matrix_3d = transform_2d_to_3d_matrix(affine_matrix_2d)
 
 
@@ -498,7 +487,7 @@ elif filetype == 2:
             })
 
             # Create a new output raster dataset
-            with rasterio.open(output_file, 'w', **kwargs) as dst:
+            with rasterio.open(output_file, 'w', BIGTIFF='YES', **kwargs) as dst:
 
                 # Reproject and resample the source raster to the output raster
                 # Actually there is no reprojection was done, it's just changing the extents

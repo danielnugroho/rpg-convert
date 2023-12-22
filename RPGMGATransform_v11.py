@@ -5,11 +5,19 @@ Created on Tue Dec  5 13:36:39 2023
 @author: Daniel.Nugroho
 
 Usage:
-    -m m -i INPUTFILE.LAZ -o OUTPUTFILE.LAZ
-    -m m -i INPUTFILE.TIF -o OUTPUTFILE.TIF
+    -m [MODE] -i [INPUTFILE] -o [OUTPUTFILE]
+    
+    MODE       : r for RPG to MGA, m for MGA to RPG
+    INPUTFILE  : input file in TIF or LAZ format
+    OUTPUTFILE : output file in TIF or LAZ format
+    
+Example usage    
+    -m m -i INPUTFILE_MGA94Z50.TIF -o OUTPUTFILE_RPG.TIF
+    -m r -i INPUTFILE_RPG.LAZ -o OUTPUTFILE_MGA94Z50.LAZ
 
-v0.11-231220
+v0.11-231223
     code cleanup, ability to export BIGTIFF
+    documentation update
 
 v0.10-231216
     worked well by using simpler method of translation, rotation, & scaling.
@@ -126,7 +134,7 @@ def translate_point(point, x_translation, y_translation):
 
 def get_file_value(filename):
     # Split the filename into its base and extension
-    base, extension = filename.split('.', 1) if '.' in filename else (filename, '')
+    _ , extension = filename.split('.', 1) if '.' in filename else (filename, '')
 
     # Convert the extension to uppercase for case-insensitive comparison
     extension = extension.upper()
@@ -327,10 +335,8 @@ elif modestr == "m":
     print("MGA to RPG transformation selected.")
     mode = MGA_TO_RPG
 else:
-    #print("Bad mode switch, exiting...")
-    #sys.exit(0)
-    print("Testing mode...")
-    mode = 2
+    print("Bad mode switch, exiting...")
+    sys.exit(0)
 
 #ensure the input file exist
 if not os.path.isfile(inputpath):
@@ -426,7 +432,8 @@ print("Input file : " + str(input_file))
 print("Output file: " + str(output_file))
 
 filetype = get_file_value(input_file)
-
+start_time = time.time()
+    
 if filetype == 1:
     print("Type is point cloud.")
 
@@ -500,9 +507,14 @@ elif filetype == 2:
 
                     dst.write(dest, indexes=i)
 
-
+    end_time = time.time()
+        
+    print("Raster data transformation completed.")
+    print("Elapsed time : " + str(end_time - start_time) + " seconds")  # time in seconds
+        
 elif filetype == 3:
     print("Type is vector.")
     print("Vector data transformation is not yet supported.")
 else:
     print("Type is unknown.")
+
